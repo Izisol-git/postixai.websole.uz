@@ -4,10 +4,12 @@ namespace App\Console\Commands;
 
 use App\Models\UserPhone;
 use danog\MadelineProto\API;
+use danog\MadelineProto\Logger;
 use Illuminate\Console\Command;
 use danog\MadelineProto\Settings;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Cache;
+use danog\MadelineProto\Settings\Logger as LoggerSettings;
 
 class TelegramAuthCommand extends Command
 {
@@ -37,11 +39,15 @@ class TelegramAuthCommand extends Command
 
 
         $settings = new Settings;
+                $loggerSettings = (new LoggerSettings)
+                ->setType(Logger::FILE_LOGGER);
+        $settings->setLogger($loggerSettings);
         $settings->setAppInfo(
             (new \danog\MadelineProto\Settings\AppInfo)
                 ->setApiId(env('TELEGRAM_API_ID'))
                 ->setApiHash(env('TELEGRAM_API_HASH'))
         );
+        
 
         $Madeline = new API($sessionPath, $settings);
 
@@ -50,6 +56,11 @@ class TelegramAuthCommand extends Command
             $this->info("SMS code sent successfully to {$phone}");
         } catch (\Exception $e) {
             $this->error("Error sending code: " . $e->getMessage());
-        }
+        }finally {
+        // <<< Muhim: Har doim lock ni o'chiramiz >>>
+        $lockKey = "telegram_verify_lock_{$this->argument('phone')}_{$this->argument('userId')}";
+        Cache::forget($lockKey);
+        // <<<
+    }
     }
 }

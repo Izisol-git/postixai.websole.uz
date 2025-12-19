@@ -2,75 +2,143 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\MessageGroup;
 use App\Models\UserPhone;
 use danog\MadelineProto\API;
-use danog\MadelineProto\Settings;
-use danog\MadelineProto\Logger;
-use danog\MadelineProto\Settings\Logger as LoggerSettings;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 
 class SendTelegramMessage extends Command
 {
-    protected $signature = 'telegram:send {group_id}';
-    protected $description = 'Send pending Telegram messages for a given MessageGroup';
+    protected $signature = 'telegram:send-messages {groupId}';
+    protected $description = 'Send telegram messages for given message group';
 
     public function handle()
     {
-        $groupId = $this->argument('group_id');
+        $groupId = (int) $this->argument('groupId');
+
         $group = MessageGroup::find($groupId);
 
         if (!$group) {
-            $this->error("MessageGroup with id {$groupId} not found!");
-            return 1;
+            $this->error("MessageGroup topilmadi: id={$groupId}");
+            Log::warning("MessageGroup topilmadi: id={$groupId}");
+            return Command::FAILURE;
         }
 
-        $messages = $group->messages()->where('status', 'pending')->get();
         $userPhone = UserPhone::find($group->user_phone_id);
 
-        if (!$userPhone || !file_exists($userPhone->session_path)) {
-            $this->warn("❌ Session topilmadi: user_phone_id={$group->user_phone_id}");
-            return 1;
+        if (!$userPhone || !$userPhone->session_path || !file_exists($userPhone->session_path)) {
+            $this->error("Session topilmadi: user_phone_id={$group->user_phone_id}");
+            Log::warning("❌ Session topilmadi: user_phone_id={$group->user_phone_id}");
+
+            $group->messages()
+                ->where('status', 'pending')
+                ->update(['status' => 'failed']);
+
+            return Command::FAILURE;
         }
 
-        $settings = new Settings;
-        $settings->getAppInfo()
-            ->setApiId(env('TELEGRAM_API_ID'))
-            ->setApiHash(env('TELEGRAM_API_HASH'));
+        try {
+            $Madeline = new API($userPhone->session_path);
+            $Madeline->start();
+        } catch (\Throwable $e) {
+            Log::error("❌ MadelineProto start failed", [
+                'user_phone_id' => $userPhone->id,
+                'error' => $e->getMessage(),
+            ]);
 
-        $loggerSettings = (new LoggerSettings)->setType(Logger::FILE_LOGGER);
-        $settings->setLogger($loggerSettings);
-        
-        $Madeline = new API($userPhone->session_path, $settings);
-        $Madeline->start();
+            $msg = $e->getMessage();
+            $shouldReset =
+                str_contains($msg, 'AUTH_KEY_UNREGISTERED') ||
+                str_contains($msg, 'SESSION_REVOKED') ||
+                str_contains($msg, 'AUTH_KEY_INVALID');
 
-        foreach ($messages as $msg) {
-            try {
-                $Madeline->messages->sendMessage([
-                    'peer'    => $msg->peer,
-                    'message' => $msg->message_text,
-                    'parse_mode' => 'HTML'
+            if ($shouldReset) {
+                Log::warning("🔄 Session RESET qilinmoqda: user_phone_id={$userPhone->id}");
+                $path = $userPhone->session_path;
+                if (File::exists($path)) {
+                    File::isDirectory($path)
+                        ? File::deleteDirectory($path)
+                        : File::delete($path);
+                }
+                $userPhone->update([
+                    'session_path' => null,
+                    'is_active' => false,
                 ]);
 
-                $msg->update([
-                    'status'   => 'sent',
-                    'sent_at'  => now(),
+                $group->messages()
+                    ->where('status', 'pending')
+                    ->update(['status' => 'failed']);
+            }
+
+            return Command::FAILURE;
+        }
+
+        // pending xabarlar
+        $messages = $group->messages()
+            ->where('status', 'pending')
+            ->orderBy('send_at')
+            ->get();
+
+        foreach ($messages as $message) {
+            try {
+                // doim schedule qilamiz (hatto now ham bo‘lsa)
+                $sendAt = $message->send_at?->isFuture() ? $message->send_at : now()->addSeconds(3);
+
+                $payload = [
+                    'peer' => $message->peer,
+                    'message' => $message->message_text,
+                    'parse_mode' => 'HTML',
+                    'schedule_date' => $sendAt->timestamp,
+                ];
+
+                $response = $Madeline->messages->sendMessage($payload);
+                $telegramMessageId = null;
+
+                if (($response['_'] ?? null) === 'updateShortSentMessage') {
+                    $status = 'sent';
+                    $telegramMessageId = $response['id'] ?? null;
+                } elseif (($response['_'] ?? null) === 'updates') {
+                    foreach ($response['updates'] as $update) {
+                        if (($update['_'] ?? null) === 'updateNewScheduledMessage') {
+                            $status = 'scheduled';
+                            $telegramMessageId = $update['message']['id'];
+                            break;
+                        }
+                        if (($update['_'] ?? null) === 'updateNewMessage') {
+                            $status = 'sent';
+                            $telegramMessageId = $update['message']['id'];
+                            break;
+                        }
+                    }
+                }
+
+
+                $message->update([
+                    'status' => $status,
+                    'sent_at' => now(),
+                    'telegram_message_id' => $telegramMessageId,
                     'attempts' => 0,
                 ]);
 
-                $this->info("✅ Message sent to {$msg->peer}");
+
+                $this->info("✅ Xabar yuborildi: {$message->peer}");
             } catch (\Throwable $e) {
-                Log::error("Telegram send failed for peer {$msg->peer}", [
+                Log::error("❌ Xabar yuborilmadi", [
+                    'peer' => $message->peer,
                     'error' => $e->getMessage(),
                 ]);
-                $msg->update(['status' => 'failed']);
-                $this->error("❌ Failed for {$msg->peer}");
-                continue;
+
+                $message->increment('attempts');
+                $message->update(['status' => 'failed']);
             }
         }
 
-        $this->info("All messages processed for group {$groupId}");
-        return 0;
+        $group->update(['status' => 'completed']);
+
+        $this->info("🎉 Group yakunlandi: id={$groupId}");
+
+        return Command::SUCCESS;
     }
 }

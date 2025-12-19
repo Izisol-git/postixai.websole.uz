@@ -60,58 +60,71 @@ class TelegramVerifyJob implements ShouldQueue
         $code     = $this->code;
         $password = $this->password;
 
-        $sessionPath = storage_path("app/sessions/{$phone}_user_{$userId}.madeline");
 
-        if (!file_exists($sessionPath)) {
-            Log::error("Session yo‘q, avval auth qiling! Phone: {$phone}");
-            return;
+        $phoneNumber = $phone;
+        $code = $code;
+        $php     = '/opt/php83/bin/php';
+        $artisan = base_path('artisan');
+        if ($password) {
+            $command = "nohup {$php} {$artisan} telegram:verify {$phoneNumber} {$userId} {$code} --password={$password} >/dev/null 2>&1 &";
+        } else {
+            $command = "nohup {$php} {$artisan} telegram:verify {$phoneNumber} {$userId} {$code} >/dev/null 2>&1 &";
         }
-
-        $Madeline = $this->madeline($phone, $userId);
-
-        try {
-            Log::info("Completing login for {$phone} with code {$code}");
-
-            $authorization = $Madeline->completePhoneLogin($code);
-
-            if ($authorization['_'] === 'account.noPassword') {
-                throw new \Exception('2FA yoqilgan, lekin parol o‘rnatilmagan!');
-            }
-
-            if ($authorization['_'] === 'account.password') {
-                if (!$password) {
-                    Log::error("Ushbu raqamda 2FA yoqilgan. Password kerak. Phone: {$phone}");
-                    return;
-                }
-
-                Log::info("2FA detected. Trying complete2falogin...");
-                $authorization = $Madeline->complete2falogin($password);
-            }
-
-            if ($authorization['_'] === 'account.needSignup') {
-                throw new \Exception("Bu raqam Telegram ro‘yxatidan o‘tmagan!");
-            }
-            $self = $Madeline->getSelf();  
-            $telegramUserId = $self['id'];
-            UserPhone::updateOrCreate(
-                [
-                    'user_id' => $userId,
-                    'phone'   => $phone,
-                    
-                ],
-                [   
-                    'telegram_user_id' => $telegramUserId,
-                    'session_path' => $sessionPath,
-                    'is_active' => true
-                ]
-            );
-            $self=$Madeline->getSelf();
-
-            Log::info("✅ {$phone} verified successfully\n");
+        exec($command);
 
 
-        } catch (\Throwable $e) {
-            Log::error("VERIFY ERROR ({$phone}): " . $e->getMessage());
-        }
+        // $sessionPath = storage_path("app/sessions/{$phone}_user_{$userId}.madeline");
+
+        // if (!file_exists($sessionPath)) {
+        //     Log::error("Session yo‘q, avval auth qiling! Phone: {$phone}");
+        //     return;
+        // }
+
+        // $Madeline = $this->madeline($phone, $userId);
+
+        // try {
+        //     Log::info("Completing login for {$phone} with code {$code}");
+
+        //     $authorization = $Madeline->completePhoneLogin($code);
+
+        //     if ($authorization['_'] === 'account.noPassword') {
+        //         throw new \Exception('2FA yoqilgan, lekin parol o‘rnatilmagan!');
+        //     }
+
+        //     if ($authorization['_'] === 'account.password') {
+        //         if (!$password) {
+        //             Log::error("Ushbu raqamda 2FA yoqilgan. Password kerak. Phone: {$phone}");
+        //             return;
+        //         }
+
+        //         Log::info("2FA detected. Trying complete2falogin...");
+        //         $authorization = $Madeline->complete2falogin($password);
+        //     }
+
+        //     if ($authorization['_'] === 'account.needSignup') {
+        //         throw new \Exception("Bu raqam Telegram ro‘yxatidan o‘tmagan!");
+        //     }
+        //     $self = $Madeline->getSelf();  
+        //     $telegramUserId = $self['id'];
+        //     UserPhone::updateOrCreate(
+        //         [
+        //             'user_id' => $userId,
+        //             'phone'   => $phone,
+
+        //         ],
+        //         [   
+        //             'telegram_user_id' => $telegramUserId,
+        //             'session_path' => $sessionPath,
+        //             'is_active' => true
+        //         ]
+        //     );
+        //     $self=$Madeline->getSelf();
+
+        //     Log::info("✅ {$phone} verified successfully\n");
+
+
+        // } catch (\Throwable $e) {
+        //     Log::error("VERIFY ERROR ({$phone}): " . $e->getMessage());
+        // }
     }
 }

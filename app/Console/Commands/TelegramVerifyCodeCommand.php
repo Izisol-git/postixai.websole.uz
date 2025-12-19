@@ -91,6 +91,7 @@ class TelegramVerifyCodeCommand extends Command
                 [
                     'session_path'      => $sessionPath,
                     // 'session_delete_at' => now()->addMinutes(15),
+                    'is_active'         => true,
                 ]
             );
 

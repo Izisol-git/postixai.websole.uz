@@ -32,104 +32,99 @@ class SendTelegramMessages implements ShouldQueue
 
     public function handle()
     {
-        $group = MessageGroup::find($this->groupId);
 
-        if (!$group) {
-            Log::warning("MessageGroup topilmadi: id={$this->groupId}");
-            return;
-        }
+        Log::info('work');
+        $php = '/opt/php83/bin/php';
+            $artisan = base_path('artisan');
+            $command = "nohup {$php} {$artisan} telegram:send-messages {$this->groupId} > /dev/null 2>&1 &";
+            exec($command);
+//         $group = MessageGroup::find($this->groupId);
 
-        $userPhone = UserPhone::find($group->user_phone_id);
+//         if (!$group) {
+//             Log::warning("MessageGroup topilmadi: id={$this->groupId}");
+//             return;
+//         }
 
-        if (!$userPhone || !file_exists($userPhone->session_path)) {
-            Log::warning("❌ Session topilmadi: user_phone_id={$group->user_phone_id}");
-            $group->messages()->where('status', 'pending')->update(['status' => 'failed']);
-            return;
-        }
+//         $userPhone = UserPhone::find($group->user_phone_id);
 
-        try {
-            $Madeline = new API($userPhone->session_path);
-            $Madeline->start();
-        } catch (\Throwable $e) {
+//         if (!$userPhone || !file_exists($userPhone->session_path)) {
+//             Log::warning("❌ Session topilmadi: user_phone_id={$group->user_phone_id}");
+//             $group->messages()->where('status', 'pending')->update(['status' => 'failed']);
+//             return;
+//         }
 
-            Log::error("❌ MadelineProto start failed for user_phone_id={$group->user_phone_id}", [
-                'error' => $e->getMessage(),
-            ]);
+//         try {
+//             $Madeline = new API($userPhone->session_path);
+//             $Madeline->start();
+//         } catch (\Throwable $e) {
 
-            $msg = $e->getMessage();
+//             Log::error("❌ MadelineProto start failed for user_phone_id={$group->user_phone_id}", [
+//                 'error' => $e->getMessage(),
+//             ]);
 
-            $shouldReset =
-                str_contains($msg, 'AUTH_KEY_UNREGISTERED') ||
-                str_contains($msg, 'SESSION_REVOKED') ||
-                str_contains($msg, 'AUTH_KEY_INVALID');
+//             $msg = $e->getMessage();
 
-            if ($shouldReset) {
-                Log::warning("🔄 Session RESET qilinmoqda: user_phone_id={$userPhone->id}");
+//             $shouldReset =
+//                 str_contains($msg, 'AUTH_KEY_UNREGISTERED') ||
+//                 str_contains($msg, 'SESSION_REVOKED') ||
+//                 str_contains($msg, 'AUTH_KEY_INVALID');
 
-                $path = $userPhone->session_path;
+//             if ($shouldReset) {
+//                 Log::warning("🔄 Session RESET qilinmoqda: user_phone_id={$userPhone->id}");
 
-                if (File::exists($path)) {
-                    if (File::isDirectory($path)) {
-                        File::deleteDirectory($path);
-                    } else {
-                        File::delete($path); // unlink o‘rniga Laravel helper
-                    }
-                }
+//                 $path = $userPhone->session_path;
 
-                $userPhone->update(['session_path' => null], 'is_active', false);
+//                 if (File::exists($path)) {
+//                 if (File::isDirectory($path)) {
+//                     File::deleteDirectory($path);
+//                 } else {
+//                     File::delete($path); // unlink o‘rniga Laravel helper
+//                 }
+//                 }
 
-                $group->messages()->where('status', 'pending')
-                    ->update(['status' => 'failed']);
-            }
+//                 $userPhone->update(['session_path' => null],'is_active', false);
 
-            return;
-        }
+//                 $group->messages()->where('status', 'pending')
+//                     ->update(['status' => 'failed']);
+//             }
 
-        // Pending xabarlarni olish, send_at bo'yicha saralash
-        $messages = $group->messages()
-            ->where('status', 'pending')
-            ->orderBy('send_at')
-            ->get();
+//             return;
+//         }
 
-        foreach ($messages as $msg) {
-            try {
-                $payload = [
-                    'peer' => $msg->peer,
-                    'message' => $msg->message_text,
-                    'parse_mode' => 'HTML',
-                ];
+//         // Pending xabarlarni olish, send_at bo'yicha saralash
+//         $messages = $group->messages()
+//             ->where('status', 'pending')
+//             ->orderBy('send_at')
+//             ->get();
 
-                // send_at tekshiruvi
-                if ($msg->send_at && $msg->send_at->isFuture()) {
-                    $payload['schedule_date'] = $msg->send_at->timestamp;
-                }
+//         foreach ($messages as $msg) {
+//     try {
+//         $response = $Madeline->messages->sendMessage([
+//             'peer' => $msg->peer,
+//             'message' => $msg->message_text,
+//             'parse_mode' => 'HTML',
+//             'schedule_date' => $msg->send_at?->timestamp ?? null, 
+//         ]);
+//         Log::info($msg->send_at?->timestamp ?? null);
+//         $scheduledMessageId = $response['updates'][0]['message']['id'] ?? null;
 
-                $response = $Madeline->messages->sendMessage($payload);
+//         $msg->update([
+//             'status' => 'sent',
+//             'sent_at' => now(),
+//             'attempts' => 0,
+//             'telegram_message_id' => $scheduledMessageId,
+//         ]);
 
-                $telegramMessageId = $response['updates'][0]['message']['id'] ?? null;
+//         Log::info("✅ Xabar yuborildi: peer={$msg->peer}, message_id={$msg->id}");
+//     } catch (\Throwable $e) {
+//         Log::error("❌ Xabar yuborilmadi: peer={$msg->peer}", [
+//             'error' => $e->getMessage(),
+//         ]);
 
-                $msg->update([
-                    'status' => 'sent',
-                    'sent_at' => now(),
-                    'telegram_message_id' => $telegramMessageId,
-                    'attempts' => 0,
-                ]);
-
-                Log::info("✅ Xabar yuborildi", [
-                    'peer' => $msg->peer,
-                    'scheduled' => isset($payload['schedule_date']),
-                ]);
-            } catch (\Throwable $e) {
-                Log::error("❌ Xabar yuborilmadi", [
-                    'peer' => $msg->peer,
-                    'error' => $e->getMessage(),
-                ]);
-
-                $msg->increment('attempts');
-                $msg->update(['status' => 'failed']);
-            }
-        }
-
-        $group->update(['status' => 'completed']);
+//         $msg->increment('attempts');
+//         $msg->update(['status' => 'failed']);
+//     }
+// }
+//         $group->update(['status' => 'completed']);
     }
 }
