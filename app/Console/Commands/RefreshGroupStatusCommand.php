@@ -30,20 +30,7 @@ class RefreshGroupStatusCommand extends Command
             Log::warning("❌ Session topilmadi: user_phone_id={$group->user_phone_id}");
             return Command::FAILURE;
         }
-        if (!File::exists($userPhone->session_path)) {
-            Log::error("❌ Session path DB da bor, lekin diskda yo‘q: user_phone_id={$userPhone->id}, path={$userPhone->session_path}");
 
-            $userPhone->update([
-                'session_path' => null,
-                'is_active' => false,
-            ]);
-
-            $group->messages()
-                ->where('status', 'pending')
-                ->update(['status' => 'failed']);
-
-            return Command::FAILURE;
-        }
         try {
             $Madeline = new API($userPhone->session_path);
             $Madeline->start();

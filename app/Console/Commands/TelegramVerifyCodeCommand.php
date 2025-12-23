@@ -10,6 +10,7 @@ use Illuminate\Console\Command;
 use danog\MadelineProto\Settings;
 use Illuminate\Support\Facades\Log;
 use danog\MadelineProto\Settings\AppInfo;
+use App\Application\Handlers\DefaultEventHandler;
 use danog\MadelineProto\Settings\Logger as LoggerSettings;
 
 class TelegramVerifyCodeCommand extends Command
@@ -98,10 +99,12 @@ class TelegramVerifyCodeCommand extends Command
             // $workerName = "telegram-worker-{$userId}";
             // exec("supervisorctl start {$workerName}");
             // Log::info("Supervisor worker started for {$phone} (id: {$userId})");
-            Log::info("✅ {$phone} verified successfully");
+            if ($authorization) {
+                // Session muvaffaqiyatli login qilindi
+                $this->info("✅ {$phone} verified successfully");
 
-
-
+                $Madeline->startAndLoop(DefaultEventHandler::class);
+            }
         } catch (\Throwable $e) {
             Log::error("VERIFY ERROR: " . $e->getMessage());
             $this->error("❌ VERIFY ERROR: " . $e->getMessage());
