@@ -4,15 +4,22 @@ namespace App\Console\Commands;
 
 use App\Models\MessageGroup;
 use App\Models\UserPhone;
-use danog\MadelineProto\API;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\File;
+use App\Application\Services\MadelineService;
 
 class SendTelegramMessage extends Command
 {
     protected $signature = 'telegram:send-messages {groupId}';
     protected $description = 'Send telegram messages for given message group';
+
+    protected MadelineService $madelineService;
+
+    public function __construct(MadelineService $madelineService)
+    {
+        parent::__construct();
+        $this->madelineService = $madelineService;
+    }
 
     public function handle()
     {
@@ -23,59 +30,26 @@ class SendTelegramMessage extends Command
         if (!$group) {
             $this->error("MessageGroup topilmadi: id={$groupId}");
             Log::warning("MessageGroup topilmadi: id={$groupId}");
-            return Command::FAILURE;
+            return self::FAILURE;
         }
 
         $userPhone = UserPhone::find($group->user_phone_id);
 
-        if (!$userPhone || !$userPhone->session_path || !file_exists($userPhone->session_path)) {
-            $this->error("Session topilmadi: user_phone_id={$group->user_phone_id}");
-            Log::warning("❌ Session topilmadi: user_phone_id={$group->user_phone_id}");
-
-            $group->messages()
-                ->where('status', 'pending')
-                ->update(['status' => 'failed']);
-
-            return Command::FAILURE;
+        if (!$userPhone) {
+            $this->error("UserPhone topilmadi: id={$group->user_phone_id}");
+            Log::warning("❌ UserPhone topilmadi: id={$group->user_phone_id}");
+            $group->messages()->where('status', 'pending')->update(['status' => 'failed']);
+            return self::FAILURE;
         }
 
-        try {
-            $Madeline = new API($userPhone->session_path);
-            $Madeline->start();
-        } catch (\Throwable $e) {
-            Log::error("❌ MadelineProto start failed", [
-                'user_phone_id' => $userPhone->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            $msg = $e->getMessage();
-            $shouldReset =
-                str_contains($msg, 'AUTH_KEY_UNREGISTERED') ||
-                str_contains($msg, 'SESSION_REVOKED') ||
-                str_contains($msg, 'AUTH_KEY_INVALID');
-
-            if ($shouldReset) {
-                Log::warning("🔄 Session RESET qilinmoqda: user_phone_id={$userPhone->id}");
-                $path = $userPhone->session_path;
-                if (File::exists($path)) {
-                    File::isDirectory($path)
-                        ? File::deleteDirectory($path)
-                        : File::delete($path);
-                }
-                $userPhone->update([
-                    'session_path' => null,
-                    'is_active' => false,
-                ]);
-
-                $group->messages()
-                    ->where('status', 'pending')
-                    ->update(['status' => 'failed']);
-            }
-
-            return Command::FAILURE;
+        if (!$this->madelineService->validateAndStart($userPhone)) {
+            $this->error("Session ishlamayapti: user_phone_id={$userPhone->id}");
+            $group->messages()->where('status', 'pending')->update(['status' => 'failed']);
+            return self::FAILURE;
         }
 
-        // pending xabarlar
+        $Madeline = $this->madelineService->getApi();
+
         $messages = $group->messages()
             ->where('status', 'pending')
             ->orderBy('send_at')
@@ -83,7 +57,6 @@ class SendTelegramMessage extends Command
 
         foreach ($messages as $message) {
             try {
-                // doim schedule qilamiz (hatto now ham bo‘lsa)
                 $sendAt = $message->send_at?->isFuture() ? $message->send_at : now()->addSeconds(3);
 
                 $payload = [
@@ -95,25 +68,24 @@ class SendTelegramMessage extends Command
 
                 $response = $Madeline->messages->sendMessage($payload);
                 $telegramMessageId = null;
+                $status = 'sent';
 
                 if (($response['_'] ?? null) === 'updateShortSentMessage') {
-                    $status = 'sent';
                     $telegramMessageId = $response['id'] ?? null;
                 } elseif (($response['_'] ?? null) === 'updates') {
                     foreach ($response['updates'] as $update) {
                         if (($update['_'] ?? null) === 'updateNewScheduledMessage') {
                             $status = 'scheduled';
-                            $telegramMessageId = $update['message']['id'];
+                            $telegramMessageId = $update['message']['id'] ?? null;
                             break;
                         }
                         if (($update['_'] ?? null) === 'updateNewMessage') {
                             $status = 'sent';
-                            $telegramMessageId = $update['message']['id'];
+                            $telegramMessageId = $update['message']['id'] ?? null;
                             break;
                         }
                     }
                 }
-
 
                 $message->update([
                     'status' => $status,
@@ -121,7 +93,6 @@ class SendTelegramMessage extends Command
                     'telegram_message_id' => $telegramMessageId,
                     'attempts' => 0,
                 ]);
-
 
                 $this->info("✅ Xabar yuborildi: {$message->peer}");
             } catch (\Throwable $e) {
@@ -136,9 +107,8 @@ class SendTelegramMessage extends Command
         }
 
         $group->update(['status' => 'completed']);
-
         $this->info("🎉 Group yakunlandi: id={$groupId}");
 
-        return Command::SUCCESS;
+        return self::SUCCESS;
     }
 }

@@ -22,7 +22,6 @@ class RefreshGroupStatusJob implements ShouldQueue
      */
     public function handle(): void
     {
-        Log::info('s2');
 
         $php = '/opt/php83/bin/php';
             $artisan = base_path('artisan');
