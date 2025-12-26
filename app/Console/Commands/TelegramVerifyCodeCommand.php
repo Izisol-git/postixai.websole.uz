@@ -102,8 +102,6 @@ class TelegramVerifyCodeCommand extends Command
             if ($authorization) {
                 // Session muvaffaqiyatli login qilindi
                 $this->info("✅ {$phone} verified successfully");
-
-                $Madeline->startAndLoop(DefaultEventHandler::class);
             }
         } catch (\Throwable $e) {
             Log::error("VERIFY ERROR: " . $e->getMessage());

@@ -21,10 +21,13 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'telegram_id',
+        'department_id',
         'oferta_read',
         'role_id',
         'email',
-        'password'
+        'password',
+        'state',
+        'value',
     ];
 
     /**
@@ -62,5 +65,8 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Department::class);
     }
-    
+    public function ban()
+    {
+        return $this->morphOne(Ban::class, 'bannable');
+    }
 }

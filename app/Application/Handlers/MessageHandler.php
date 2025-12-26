@@ -153,13 +153,15 @@ class MessageHandler
             Log::info('work');
 
             if (!$user) {
-                $user = User::firstOrCreate(
-                    ['telegram_id' => $telegramUserId],
-                    [
-                        'name' => $firstName,
-                        'state' => null,
-                    ]
+                $this->tgService->tg(
+                    fn() =>
+                    $this->telegram->sendMessage([
+                        'chat_id' => $chatId,
+                        'text' => "Siz tizimda ro‘yxatdan o‘tmadingiz. Tizimga kirish uchun adminlarga Telegram ID’ingizni yuboring: <code>$telegramUserId</code> va so‘ng /start komandasi bilan boshlang.",
+                        'parse_mode' => 'HTML',
+                    ])
                 );
+                return 'ok';
             }
 
             // eski jarayonlarni tozalash

@@ -30,5 +30,8 @@ class UserPhone extends Model
     {
         return $this->hasMany(Catalog::class);
     }
+    public function ban()
+    {
+        return $this->morphOne(Ban::class, 'bannable');
+    }
 }
-

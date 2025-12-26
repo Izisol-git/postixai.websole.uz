@@ -38,41 +38,10 @@ class TelegramAuthJob implements ShouldQueue
 
         Log::info("TelegramAuthJob started for {$phone}, user {$userId}");
 
-                    // $phone = $phone;
-            // $userId = $userId;
             $php = '/opt/php83/bin/php';
             $artisan = base_path('artisan');
             $command = "nohup {$php} {$artisan} telegram:auth {$phone} {$userId} > /dev/null 2>&1 &";
             exec($command);
-        // $sessionPath = storage_path("app/sessions/{$phone}_user_{$userId}.madeline");
-
-        // // Удаляем старую сессию
-        // if (file_exists($sessionPath)) {
-        //     if (is_dir($sessionPath)) {
-        //         File::deleteDirectory($sessionPath);
-        //     } else {
-        //         unlink($sessionPath);
-        //     }
-        //     sleep(3);
-        // }
-
-        // if (!is_dir(dirname($sessionPath))) {
-        //     mkdir(dirname($sessionPath), 0777, true);
-        // }
-
-        // $settings = new Settings;
-        // $settings->setAppInfo(
-        //     (new \danog\MadelineProto\Settings\AppInfo)
-        //         ->setApiId(env('TELEGRAM_API_ID'))
-        //         ->setApiHash(env('TELEGRAM_API_HASH'))
-        // );
-
-        // try {
-        //     $Madeline = new API($sessionPath, $settings);
-        //     $Madeline->phoneLogin($phone);
-        //     Log::info("SMS code sent successfully to {$phone}");
-        // } catch (\Exception $e) {
-        //     Log::error("TelegramAuthJob error for {$phone}: " . $e->getMessage());
-        // }
+        
     }
 }

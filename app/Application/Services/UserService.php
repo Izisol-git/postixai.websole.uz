@@ -32,7 +32,7 @@ class UserService
     }
 
     public function store(array $data, $authUser)
-    {
+    {   
         if ($authUser->role->name === 'admin') {
             $data['department_id'] = $authUser->department_id;
             $userRole = Role::where('name', 'user')->first();
