@@ -63,8 +63,7 @@ a {
 <div class="card">
   <h1>😔 Tizim vaqtincha ishlamayapti</h1>
   <p>
-    Kechirasiz, serverda kutilmagan nosozlik yuz berdi.<br>
-    Biz bu muammoni allaqachon qayd etdik.
+    Texnik iwlar olib borilmoqda. Noqulayliklar uchun  uzr!
   </p>
 
   <a href="/departments">Bosh sahifa</a>

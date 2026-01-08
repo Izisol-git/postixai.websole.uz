@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\View\Admin\MainController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\View\BanController;
 use App\Http\Controllers\View\AuthController;
@@ -7,9 +8,7 @@ use App\Http\Controllers\View\UserController;
 use App\Http\Controllers\View\TelegramController;
 use App\Http\Controllers\View\DepartmentController;
 
-Route::get('/', function () {
-    return view('auth.login');
-});
+require __DIR__ . '/methods/web.php';
 
 
 Route::get('/login', [AuthController::class, 'login'])->name('login');
@@ -28,8 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::put('departments/{department}', [DepartmentController::class, 'update'])->name('departments.update');
     Route::delete('departments/{department}', [DepartmentController::class, 'destroy'])->name('departments.destroy');
 
-    Route::middleware('role:superadmin')->group(function () {
-    });
+    Route::middleware('role:superadmin')->group(function () {});
     Route::middleware('role:superadmin,admin')->group(function () {
         Route::get('departments', [DepartmentController::class, 'index'])->name('departments.index');
 
@@ -51,9 +49,13 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/admin/ban-unban', [BanController::class, 'banUnban'])
             ->name('admin.ban-unban');
-        Route::get(
-            '/departments/{department}/dashboard',
-            [DepartmentController::class, 'dashboard']
-        )->name('departments.dashboard');
+
+        Route::get('/profile', [UserController::class, 'profile'])->name('profile');
+        Route::prefix('admin')->namespace('App\Http\Controllers\View\Admin')->group(function () {
+            Route::get('/departments/{department}', [MainController::class, 'index'])->name('departments.dashboard');
+            Route::get('/departments/{department}/users', [MainController::class, 'users'])->name('departments.users');
+            Route::get('/departments/{department}/operations', [MainController::class, 'operations'])->name('departments.operations');
+        });
+
     });
 });

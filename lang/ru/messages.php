@@ -1,0 +1,96 @@
+<?php
+
+return [
+  'admin' => [
+    'dashboard'=>'Панель',
+    'main_dashboard'=>'Главная панель',
+
+    'users'=>'Пользователи',
+    'phones'=>'Телефоны',
+    'operations'=>'Операции',
+    'messages_count'=>'Сообщения',
+
+    'last_active_users' => 'Последние активные пользователи',
+    'no_recent_activity' => "Активность не найдена",
+    'messages_per_day' => "Сообщения в день",
+    'users_by_operations' => "Пользователи по операциям",
+    'all_year' => "Весь год",
+    'all_time' => "Все время",
+    'month' => "Месяц",
+    'day' => "День",
+    'grouped_bar' => "Сообщения по активным телефонам",
+    'active' => "Активный",
+
+    'add_user' => 'Добавить пользователя',
+    'search_users' => 'Поиск пользователей...',
+    'toggle' => 'Выбрать',
+    'showing' => 'Показано',
+    'no_telegram' => 'Нет Telegram',
+    'no_role' => 'Роль не назначена',
+
+    'add_phone' => 'Добавить телефон',
+    'details' => 'Подробнее',
+
+    'ban' => 'Заблокировать',
+    'unban' => 'Разблокировать',
+
+    'delete' => 'Удалить',
+    'delete_user' => 'Удалить пользователя',
+
+    'confirm' => 'Подтвердить',
+    'cancel' => 'Отмена',
+    'continue' => 'Продолжить',
+    'confirm_type_name' => 'Введите имя для подтверждения',
+    'confirm_mismatch' => 'Имя не совпадает',
+    'back' => 'Назад',
+
+    'success' => 'Успешно',
+    'error' => 'Ошибка',
+    'server_error' => 'Ошибка сервера',
+
+    'phone_activated' => 'Телефон активирован',
+    'error_phone_activate' => 'Не удалось активировать телефон',
+    'year' => 'Год',
+  ],
+
+  'layout' => [
+    'profile' => 'Профиль',
+    'settings' => 'Настройки',
+    'logout' => 'Выйти',
+    'langs' => ['uz'=>'Уз','ru'=>'Ру','en'=>'En','ko'=>'Ko','zh'=>'Zh'],
+  ],
+  'operations' => [
+    'title' => 'Операции',
+    'subtitle' => 'Операции отдела: :dept',
+    'search_placeholder' => 'Поиск по тексту сообщения...',
+    'filter_all_status' => 'Все',
+    'status_pending' => 'В ожидании',
+    'status_scheduled' => 'Запланировано',
+    'status_sent' => 'Отправлено',
+    'status_canceled' => 'Отменено',
+    'status_failed' => 'Ошибка',
+    'group' => 'Операция',
+    'by_user' => 'Пользователь',
+    'text_label' => 'Текст',
+    'peer_total' => 'Всего',
+    'total' => 'ВСЕГО',
+    'total_sent' => 'ОТПРАВЛЕНО',
+    'rate' => 'СКОРОСТЬ',
+    'btn_refresh' => 'Обновить',
+    'btn_cancel' => 'Отменить',
+    'confirm' => 'Подтверждение',
+    'confirm_text_default' => 'Вы уверены, что хотите выполнить это действие?',
+    'confirm_refresh_text' => 'Вы хотите обновить операцию №:id. Продолжить?',
+    'confirm_cancel_text' => 'Вы хотите отменить операцию №:id. Продолжить?',
+    'btn_search' => 'Поиск',
+    'showing' => 'Показано',
+    'total_groups' => 'Количество операций',
+    'total_messages' => 'Количество сообщений',
+    'refresh_success' => 'Операция №:id обновлена',
+    'refresh_failed' => 'Ошибка при обновлении операции №:id',
+    'cancel_success' => 'Операция №:id отменена. Обновлено сообщений: :count',
+    'cancel_failed' => 'Ошибка при отмене операции №:id',
+    'error_no_permission' => 'У вас нет прав для выполнения этого действия',
+],
+
+];

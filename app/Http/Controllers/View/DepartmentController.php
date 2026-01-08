@@ -19,7 +19,7 @@ class DepartmentController extends Controller
     {
         $user=$request->user();
         if(!in_array($user->role->name,['superadmin'])){
-            return redirect()->route('departments.show',$user->department_id);
+            return redirect()->route('departments.dashboard',$user->department_id);
         }
         // Range: all, year, month, week, day
         $range = $request->get('range', 'all');
@@ -134,7 +134,10 @@ class DepartmentController extends Controller
     public function show(Request $request, $id)
     {
         $department = Department::with('ban')->findOrFail($id);
-        
+        $user=$request->user();
+        if(!in_array($user->role->name,['superadmin'])){
+            return redirect()->route('departments.dashboard',$user->department_id);
+        }
 
         if ($department->ban && $department->ban->active == 0 && $department->ban->starts_at && $department->ban->starts_at < now()) {
             $department->ban->active = 1;
@@ -265,59 +268,6 @@ class DepartmentController extends Controller
             'search'
         ));
     }
-    public function dashboard($id)
-    {
-        $department = Department::findOrFail($id);
-
-        /** FAST COUNTS */
-        $usersCount = $department->users()->count();
-
-        $activePhonesCount = DB::table('user_phones')
-            ->join('users', 'users.id', '=', 'user_phones.user_id')
-            ->where('users.department_id', $department->id)
-            ->where('user_phones.is_active', 1)
-            ->count();
-
-        $messageGroupsCount = DB::table('message_groups')
-            ->whereIn('user_phone_id', function ($q) use ($department) {
-                $q->select('user_phones.id')
-                    ->from('user_phones')
-                    ->join('users', 'users.id', '=', 'user_phones.user_id')
-                    ->where('users.department_id', $department->id);
-            })
-            ->count();
-
-        $telegramMessagesCount = DB::table('telegram_messages')
-            ->whereIn('message_group_id', function ($q) use ($department) {
-                $q->select('message_groups.id')
-                    ->from('message_groups')
-                    ->join('user_phones', 'user_phones.id', '=', 'message_groups.user_phone_id')
-                    ->join('users', 'users.id', '=', 'user_phones.user_id')
-                    ->where('users.department_id', $department->id);
-            })
-            ->count();
-
-        /** LAST 5 OPERATIONS */
-        $lastOperations = DB::table('telegram_messages')
-            ->join('message_groups', 'message_groups.id', '=', 'telegram_messages.message_group_id')
-            ->join('user_phones', 'user_phones.id', '=', 'message_groups.user_phone_id')
-            ->join('users', 'users.id', '=', 'user_phones.user_id')
-            ->where('users.department_id', $department->id)
-            ->orderByDesc('telegram_messages.id')
-            ->limit(5)
-            ->get([
-                'telegram_messages.status',
-                'telegram_messages.peer',
-                'telegram_messages.sent_at'
-            ]);
-
-        return view('departments.adminShow', compact(
-            'department',
-            'usersCount',
-            'activePhonesCount',
-            'messageGroupsCount',
-            'telegramMessagesCount',
-            'lastOperations'
-        ));
-    }
+    
+    
 }

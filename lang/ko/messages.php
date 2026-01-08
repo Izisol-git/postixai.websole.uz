@@ -1,0 +1,96 @@
+<?php
+
+return [
+  'admin' => [
+    'dashboard'=>'대시보드',
+    'main_dashboard'=>'메인 대시보드',
+
+    'users'=>'사용자',
+    'phones'=>'전화번호',
+    'operations'=>'작업',
+    'messages_count'=>'메시지 수',
+
+    'last_active_users' => '최근 활동 사용자',
+    'no_recent_activity' => "활동이 없습니다",
+    'messages_per_day' => "일별 메시지",
+    'users_by_operations' => "작업별 사용자",
+    'all_year' => "올해 전체",
+    'all_time' => "전체 기간",
+    'month' => "월",
+    'day' => "일",
+    'grouped_bar' => "활성 전화별 메시지",
+    'active' => "활성",
+
+    'add_user' => '사용자 추가',
+    'search_users' => '사용자 검색...',
+    'toggle' => '토글',
+    'showing' => '표시',
+    'no_telegram' => '텔레그램 없음',
+    'no_role' => '역할 없음',
+
+    'add_phone' => '전화 추가',
+    'details' => '세부 정보',
+
+    'ban' => '차단',
+    'unban' => '차단 해제',
+
+    'delete' => '삭제',
+    'delete_user' => '사용자 삭제',
+
+    'confirm' => '확인',
+    'cancel' => '취소',
+    'continue' => '계속',
+    'confirm_type_name' => '확인하려면 이름을 입력하세요',
+    'confirm_mismatch' => '이름이 일치하지 않습니다',
+    'back' => '뒤로',
+
+    'success' => '성공',
+    'error' => '오류',
+    'server_error' => '서버 오류',
+
+    'phone_activated' => '전화가 활성화되었습니다',
+    'error_phone_activate' => '전화 활성화 실패',
+    'year' => '연도',
+  ],
+
+  'layout' => [
+    'profile' => '프로필',
+    'settings' => '설정',
+    'logout' => '로그아웃',
+    'langs' => ['uz'=>'Uz','ru'=>'Ru','en'=>'En','ko'=>'Ko','zh'=>'Zh'],
+  ],
+  'operations' => [
+    'title' => '작업',
+    'subtitle' => '부서 작업: :dept',
+    'search_placeholder' => '메시지 내용으로 검색...',
+    'filter_all_status' => '전체',
+    'status_pending' => '대기 중',
+    'status_scheduled' => '예약됨',
+    'status_sent' => '전송됨',
+    'status_canceled' => '취소됨',
+    'status_failed' => '실패',
+    'group' => '작업',
+    'by_user' => '사용자',
+    'text_label' => '텍스트',
+    'peer_total' => '총합',
+    'total' => '전체',
+    'total_sent' => '전송 완료',
+    'rate' => '속도',
+    'btn_refresh' => '새로고침',
+    'btn_cancel' => '취소',
+    'confirm' => '확인',
+    'confirm_text_default' => '이 작업을 수행하시겠습니까?',
+    'confirm_refresh_text' => '작업 #:id 를 새로고침하려고 합니다. 계속하시겠습니까?',
+    'confirm_cancel_text' => '작업 #:id 를 취소하려고 합니다. 계속하시겠습니까?',
+    'btn_search' => '검색',
+    'showing' => '표시 중',
+    'total_groups' => '작업 수',
+    'total_messages' => '메시지 수',
+    'refresh_success' => '작업 #:id 가 성공적으로 새로고침되었습니다',
+    'refresh_failed' => '작업 #:id 새로고침 실패',
+    'cancel_success' => '작업 #:id 가 취소되었습니다. :count 개 메시지 상태 변경',
+    'cancel_failed' => '작업 #:id 취소 실패',
+    'error_no_permission' => '이 작업을 수행할 권한이 없습니다',
+],
+
+];

@@ -1,0 +1,96 @@
+<?php
+
+return [
+  'admin' => [
+    'dashboard'=>'仪表盘',
+    'main_dashboard'=>'主仪表盘',
+
+    'users'=>'用户',
+    'phones'=>'电话',
+    'operations'=>'操作',
+    'messages_count'=>'消息数',
+
+    'last_active_users' => '最近活跃用户',
+    'no_recent_activity' => "没有最近活动",
+    'messages_per_day' => "每日消息",
+    'users_by_operations' => "按操作的用户",
+    'all_year' => "全年",
+    'all_time' => "所有时间",
+    'month' => "月",
+    'day' => "天",
+    'grouped_bar' => "按电话的消息",
+    'active' => "活跃",
+
+    'add_user' => '添加用户',
+    'search_users' => '搜索用户...',
+    'toggle' => '切换',
+    'showing' => '显示',
+    'no_telegram' => '无 Telegram',
+    'no_role' => '未分配角色',
+
+    'add_phone' => '添加电话',
+    'details' => '详情',
+
+    'ban' => '封禁',
+    'unban' => '解除封禁',
+
+    'delete' => '删除',
+    'delete_user' => '删除用户',
+
+    'confirm' => '确认',
+    'cancel' => '取消',
+    'continue' => '继续',
+    'confirm_type_name' => '输入名称以确认',
+    'confirm_mismatch' => '名称不匹配',
+    'back' => '返回',
+    'year' => '年份',
+
+    'success' => '成功',
+    'error' => '错误',
+    'server_error' => '服务器错误',
+
+    'phone_activated' => '电话已激活',
+    'error_phone_activate' => '激活电话失败',
+  ],
+
+  'layout' => [
+    'profile' => '个人资料',
+    'settings' => '设置',
+    'logout' => '登出',
+    'langs' => ['uz'=>'Uz','ru'=>'Ru','en'=>'En','ko'=>'Ko','zh'=>'Zh'],
+  ],
+  'operations' => [
+    'title' => '操作',
+    'subtitle' => '部门操作：:dept',
+    'search_placeholder' => '按消息内容搜索...',
+    'filter_all_status' => '全部',
+    'status_pending' => '等待中',
+    'status_scheduled' => '已计划',
+    'status_sent' => '已发送',
+    'status_canceled' => '已取消',
+    'status_failed' => '失败',
+    'group' => '操作',
+    'by_user' => '用户',
+    'text_label' => '文本',
+    'peer_total' => '总计',
+    'total' => '总数',
+    'total_sent' => '已发送',
+    'rate' => '速率',
+    'btn_refresh' => '刷新',
+    'btn_cancel' => '取消',
+    'confirm' => '确认',
+    'confirm_text_default' => '您确定要执行此操作吗？',
+    'confirm_refresh_text' => '您将刷新操作 #:id，是否继续？',
+    'confirm_cancel_text' => '您将取消操作 #:id，是否继续？',
+    'btn_search' => '搜索',
+    'showing' => '显示中',
+    'total_groups' => '操作数量',
+    'total_messages' => '消息数量',
+    'refresh_success' => '操作 #:id 已刷新',
+    'refresh_failed' => '刷新操作 #:id 时出错',
+    'cancel_success' => '操作 #:id 已取消，更新了 :count 条消息',
+    'cancel_failed' => '取消操作 #:id 时出错',
+    'error_no_permission' => '您没有权限执行此操作',
+],
+
+];

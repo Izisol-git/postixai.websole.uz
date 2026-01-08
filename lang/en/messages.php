@@ -1,0 +1,96 @@
+<?php
+
+return [
+  'admin' => [
+    'dashboard'=>'Dashboard',
+    'main_dashboard'=>'Main dashboard',
+
+    'users'=>'Users',
+    'phones'=>'Phones',
+    'operations'=>'Operations',
+    'messages_count'=>'Messages',
+
+    'last_active_users' => 'Last active users',
+    'no_recent_activity' => "No recent activity",
+    'messages_per_day' => "Messages per day",
+    'users_by_operations' => "Users by operations",
+    'all_year' => "All year",
+    'all_time' => "All time",
+    'month' => "Month",
+    'day' => "Day",
+    'grouped_bar' => "Messages by active phones",
+    'active' => "Active",
+
+    'add_user' => 'Add user',
+    'search_users' => 'Search users...',
+    'toggle' => 'Toggle',
+    'showing' => 'Showing',
+    'no_telegram' => 'No Telegram',
+    'no_role' => 'No role',
+
+    'add_phone' => 'Add phone',
+    'details' => 'Details',
+
+    'ban' => 'Ban',
+    'unban' => 'Unban',
+
+    'delete' => 'Delete',
+    'delete_user' => 'Delete user',
+
+    'confirm' => 'Confirm',
+    'cancel' => 'Cancel',
+    'continue' => 'Continue',
+    'confirm_type_name' => 'Type the name to confirm',
+    'confirm_mismatch' => 'Name mismatch',
+    'back' => 'Back',
+
+    'success' => 'Success',
+    'error' => 'Error',
+    'server_error' => 'Server error',
+
+    'phone_activated' => 'Phone activated',
+    'error_phone_activate' => 'Failed to activate phone',
+    'year' => 'Year',
+  ],
+
+  'layout' => [
+    'profile' => 'Profile',
+    'settings' => 'Settings',
+    'logout' => 'Logout',
+    'langs' => ['uz'=>'Uz','ru'=>'Ru','en'=>'En','ko'=>'Ko','zh'=>'Zh'],
+  ],
+  'operations' => [
+    'title' => 'Operations',
+    'subtitle' => 'Operations for department: :dept',
+    'search_placeholder' => 'Search by message text...',
+    'filter_all_status' => 'All',
+    'status_pending' => 'Pending',
+    'status_scheduled' => 'Scheduled',
+    'status_sent' => 'Sent',
+    'status_canceled' => 'Canceled',
+    'status_failed' => 'Failed',
+    'group' => 'Operation',
+    'by_user' => 'User',
+    'text_label' => 'Text',
+    'peer_total' => 'Total',
+    'total' => 'TOTAL',
+    'total_sent' => 'TOTAL SENT',
+    'rate' => 'RATE',
+    'btn_refresh' => 'Refresh',
+    'btn_cancel' => 'Cancel',
+    'confirm' => 'Confirmation',
+    'confirm_text_default' => 'Are you sure you want to perform this action?',
+    'confirm_refresh_text' => 'You are about to refresh operation #:id. Continue?',
+    'confirm_cancel_text' => 'You are about to cancel operation #:id. Continue?',
+    'btn_search' => 'Search',
+    'showing' => 'Showing',
+    'total_groups' => 'Total operations',
+    'total_messages' => 'Total messages',
+    'refresh_success' => 'Operation #:id refreshed successfully',
+    'refresh_failed' => 'Failed to refresh operation #:id',
+    'cancel_success' => 'Operation #:id canceled. :count messages updated',
+    'cancel_failed' => 'Failed to cancel operation #:id',
+    'error_no_permission' => 'You do not have permission to perform this action',
+],
+
+];
