@@ -405,7 +405,7 @@ class MessageHandler
                 ->setResizeKeyboard(true)
                 ->setOneTimeKeyboard(true)
                 ->row([
-                    Keyboard::button('Telefonlarim'),
+                    Keyboard::button('📱 Telefonlarim'),
                 ]);
             $this->tgService->tg(
                 fn() =>
@@ -433,7 +433,7 @@ class MessageHandler
                         ->setResizeKeyboard(true)
                         ->setOneTimeKeyboard(true)
                         ->row([
-                            Keyboard::button('Telefonlarim'),
+                            Keyboard::button('📱 Telefonlarim'),
                         ]);
                     $this->tgService->tg(fn() =>
 
@@ -447,7 +447,7 @@ class MessageHandler
             }
             return 'ok';
         }
-        if ($text === 'Telefonlarim' || $text === '/phones') {
+        if ($text === '📱 Telefonlarim' || $text === '/phones') {
 
             $userPhones = $user->phones()->get();
 

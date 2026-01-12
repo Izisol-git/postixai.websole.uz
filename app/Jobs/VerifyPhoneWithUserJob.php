@@ -26,17 +26,27 @@ class VerifyPhoneWithUserJob implements ShouldQueue
     }
 
     public function handle(): void
-    {
-        $php = '/opt/php83/bin/php'; 
-        $artisan = base_path('artisan');
+{
+    $php = '/opt/php83/bin/php';
+    $artisan = base_path('artisan');
 
-        
+    $command = "nohup {$php} {$artisan} telegram:userWithPhone {$this->phone} {$this->code}";
 
-        $command = "nohup {$php} {$artisan} telegram userVithPhone {$this->phone} {$this->code} {--department=$this->departmentId} >/dev/null 2>&1 &";
-
-
-        exec($command);
-
-
+    if ($this->departmentId) {
+        $command .= " --department={$this->departmentId}";
     }
+
+    if ($this->password) {
+        $command .= " --password={$this->password}";
+    }
+
+    $command .= " >/dev/null 2>&1 &";
+
+    exec($command);
+
+    Log::info('VerifyPhoneWithUserJob executed', [
+        'command' => $command
+    ]);
+}
+
 }

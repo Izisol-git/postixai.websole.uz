@@ -4,12 +4,15 @@ namespace App\Http\Controllers\View\Admin;
 
 use App\Models\User;
 use App\Models\UserPhone;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Jobs\TelegramAuthJob;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Jobs\VerifyPhoneWithUserJob;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use App\Application\Services\LimitService;
 use Illuminate\Validation\ValidationException;
@@ -179,14 +182,23 @@ class UserController extends Controller
     public function sendPhone(Request $request)
     {
         
-        $user = $request->user();
+        $request->validate(['phone' => 'required|string']);
 
-        if (!$this->canUsePhone($request->phone)) {
+    try {
+        $phone = preg_replace('/[^0-9+]/', '', $request->input('phone', ''));
+        if (!str_starts_with($phone, '+')) {
+            $phone = '+' . $phone;
+        }
+
+        $user = $this->resolveUserFromRequest($request);
+
+        if (!$this->canUsePhone($phone)) {
             return response()->json([
                 'status' => 'error',
                 'message' => __('messages.telegram.user_exists')
             ], 403);
         }
+
         if (!$this->limit->canCreateUser($user)) {
             return response()->json([
                 'status' => 'error',
@@ -194,23 +206,30 @@ class UserController extends Controller
             ], 403);
         }
 
-        $request->validate(['phone' => 'required|string']);
-        try {
-            $user = $this->resolveUserFromRequest($request);
+        $lockKey = "telegram_verify_lock_{$phone}_{$user->id}";
+        $lockTtlSeconds = 60 * 10; 
 
-            $this->authService->login($user, $request->phone);
-            sleep(2);
-            return response()->json([
-                'status' => 'sms_sent',
-                'message' => __('messages.telegram.sms_sent'),
-                'user_id' => $user->id,
-            ], 200);
-        } catch (ValidationException $e) {
-            return response()->json(['status' => 'error', 'errors' => $e->errors()], 422);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
+        $started = false;
+        if (Cache::add($lockKey, true, $lockTtlSeconds)) {
+            TelegramAuthJob::dispatch($phone, $user->id)->onQueue('telegram');
+            $started = true;
         }
+
+        return response()->json([
+            'status' => $started ? 'sms_sent' : 'locked',
+            'message' => $started
+                ? __('messages.telegram.sms_sent')
+                : (__('messages.telegram.already_in_progress') ?? 'Verification already in progress'),
+            'user_id' => $user->id,
+        ], 200);
+
+    } catch (ValidationException $e) {
+        return response()->json(['status' => 'error', 'errors' => $e->errors()], 422);
+    } catch (\Throwable $e) {
+        return response()->json(['status' => 'error', 'message' => $e->getMessage()], 400);
     }
+    }
+    
     public function storeUserWithTelegram(Request $request)
     {
         $data = $request->validate([
@@ -238,7 +257,11 @@ class UserController extends Controller
 
         VerifyPhoneWithUserJob::dispatch($data['phone'], $data['code'], null, $departmentId)
             ->onQueue('telegram');
-
+        $token = (string) Str::uuid();
+        Cache::put("notif:{$token}", [
+            'message' => __('messages.telegram.started'),
+            'type'    => 'success',
+        ], now()->addMinutes(10));
 
         return redirect()->route('departments.users', $departmentId)->with('success', __('messages.telegram.started'));
     }

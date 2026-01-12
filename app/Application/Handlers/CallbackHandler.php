@@ -513,7 +513,7 @@ class CallbackHandler
                     ->setResizeKeyboard(true)
                     ->setOneTimeKeyboard(true)
                     ->row([
-                        Keyboard::button('Telefonlarim'),
+                        Keyboard::button('📱 Telefonlarim'),
                     ]);
                 sleep(3);
                 $this->tgService->tg(fn() =>

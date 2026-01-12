@@ -210,6 +210,8 @@ return [
     'try_again' => 'Please try again',
     'limit' => 'Limit reached. A new slot will be available after deleting a user.',
     'user_exists' => 'A user with this phone number already exists in the system.',
+    'already_in_progress' => 'The Telegram login process for a user with this phone number is already in progress.',
+    'started' => 'The process of connecting to Telegram has started. Please wait.',
 ],
 
 

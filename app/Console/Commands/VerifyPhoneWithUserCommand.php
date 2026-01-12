@@ -17,16 +17,15 @@ use Exception;
 
 class VerifyPhoneWithUserCommand extends Command
 {
-    protected $signature = 'telegram:userVithPhone {phone} {code}  {departmentId}';
+    protected $signature = 'telegram:userWithPhone {phone} {code} {userId} {--department=} {--password=}';
     protected $description = 'Verify phone with MadelineProto, get telegram user info and create/update local User + UserPhone';
 
-    protected function findSessionPath(string $phone): ?string
+    protected function findSessionPath(string $phone, string $userId): ?string
     {
-        // session fayllar turlicha nomlanishi mumkin, shuning uchun glob bilan qidiramiz
-        $pattern = storage_path("app/sessions/{$phone}_*.madeline");
-        $files = glob($pattern);
-        return $files[0] ?? null;
+        $path = storage_path("app/sessions/{$phone}_user_{$userId}.madeline");
+        return file_exists($path) ? $path : null;
     }
+
 
     protected function madeline($sessionPath)
     {
@@ -50,9 +49,11 @@ class VerifyPhoneWithUserCommand extends Command
     {
         $phone = $this->argument('phone');
         $code  = $this->argument('code');
-        $department = $this->argument('departmentId');
+        $userId = $this->argument('userId');
+        $department = $this->option('department');
+        $password   = $this->option('password');
 
-        $sessionPath = $this->findSessionPath($phone);
+        $sessionPath = $this->findSessionPath($phone, $userId);
 
         Log::info("starting VerifyPhoneWithUserCommand for phone {$phone}");
         if (!$sessionPath) {
@@ -73,13 +74,16 @@ class VerifyPhoneWithUserCommand extends Command
                 return 1;
             }
 
+
             if ($authorization['_'] === 'account.password') {
                 if (!$password) {
-                    $this->error("Ushbu raqam 2FA bilan himoyalangan. --password=PAROL qo‘shing");
+                    $this->error("2FA yoqilgan. --password=PAROL qo‘shing");
                     return 1;
                 }
+
                 $authorization = $Madeline->complete2falogin($password);
             }
+
 
             if ($authorization['_'] === 'account.needSignup') {
                 $this->error("Bu raqam Telegram ro‘yxatidan o‘tmagan!");
@@ -119,7 +123,6 @@ class VerifyPhoneWithUserCommand extends Command
 
             $this->info("✅ {$phone} verified and user created/updated");
             return 0;
-
         } catch (\Throwable $e) {
             Log::error("VerifyPhoneWithUserCommand ERROR ({$phone}): " . $e->getMessage());
             $this->error("❌ VERIFY ERROR: " . $e->getMessage());

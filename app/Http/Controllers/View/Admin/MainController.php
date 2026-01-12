@@ -9,6 +9,7 @@ use App\Models\MessageGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 
 class MainController extends Controller
 {
@@ -243,6 +244,7 @@ class MainController extends Controller
     }
     public function users(Request $request, Department $department)
     {
+        
         $q = $request->input('q');
 
         $usersQuery = User::with(['avatar', 'phones.ban', 'ban', 'role'])

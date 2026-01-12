@@ -210,6 +210,8 @@ return [
         'try_again' => 'Qayta urinib ko‘ring',
         'limit' => 'Limitga yetildi. Foydalanuvchi o‘chirilsa, yangi slot bo‘shaydi.',
         'user_exists' => 'Ushbu tizimda ushbu telefon raqamiga ega foydalanuvchi allaqachon mavjud.',
+        'already_in_progress' => 'Ushbu telefon raqamiga ega foydalanuvchi bilan Telegram kirish jarayoni allaqachon davom etmoqda.',
+        'started' => 'Telegram bilan bog‘lash jarayoni boshlandi. Iltimos, biroz kuting.',
     ],
 
 ];

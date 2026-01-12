@@ -195,6 +195,8 @@ return [
     'try_again' => '请重试',
     'limit' => '已达到限制。删除用户后将释放新的名额。',
     'user_exists' => '系统中已存在使用此手机号的用户。',
+    'already_in_progress' => '使用此手机号的用户的 Telegram 登录流程已在进行中。',
+    'started' => '已启动与 Telegram 的绑定流程。请稍候。',
 
 ],
 
