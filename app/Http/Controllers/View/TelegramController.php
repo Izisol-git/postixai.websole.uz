@@ -15,7 +15,8 @@ use App\Application\Services\TelegramAuthService;
 
 class TelegramController extends Controller
 {
-    public function __construct(protected TelegramAuthService $authService) {}
+    public function __construct(protected TelegramAuthService $authService) {
+    }
 
     protected function resolveUserFromRequest(Request $request): User
     {
@@ -27,9 +28,8 @@ class TelegramController extends Controller
             }
             return $user;
         }
-
         $user = $request->user();
-        if (! $user) {
+        if (! $user) {      
             abort(401, 'Login talab qilinadi');
         }
         return $user;
@@ -120,14 +120,12 @@ class TelegramController extends Controller
             ->with('success', "Operatsiya #{$group->id} yangilash jarayoniga yuborildi.");
     }
     public function logout(Request $request): RedirectResponse
-    {
-        
+    {   
         $user = $this->resolveUserFromRequest($request);
 
         $this->authService->logout($user, $request->input('phone'));
-
         return redirect()
-            ->route('telegram.login')
+            ->back()
             ->with('success', 'Siz muvaffaqiyatli Telegramdan chiqdingiz.');
     }
 

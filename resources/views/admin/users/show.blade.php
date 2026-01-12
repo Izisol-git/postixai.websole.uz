@@ -147,6 +147,40 @@
             background-color: var(--card-grad-2) !important;
             color: var(--muted) !important;
         }
+
+        /* Simple modal styles */
+        .modal-backdrop-custom {
+            position: fixed;
+            inset: 0;
+            background: rgba(2,6,23,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 99998;
+        }
+
+        .modal-custom {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 18px;
+            width: 420px;
+            max-width: calc(100% - 32px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.03);
+            color: var(--text);
+        }
+
+        .modal-custom h4 {
+            margin: 0 0 8px 0;
+            color: var(--yellow, #facc15);
+        }
+
+        .modal-actions {
+            display:flex;
+            justify-content:flex-end;
+            gap:8px;
+            margin-top:12px;
+        }
     </style>
 
 <div id="toast-container" style="position:fixed; top:60px; right:20px; z-index:99999;"></div>
@@ -309,16 +343,17 @@
                                         {{ $phone->is_active ? __('messages.users.active') : __('messages.users.inactive') }}
                                     </div>
                                 </div>
-
+                                @if($phone->is_active)
                                 <div class="d-flex gap-2 align-items-center">
-                                    <form method="POST"
-                                        action="{{ route('telegram.logout', ['user' => $user->id, 'phone' => $phone->id]) }}"
-                                        onsubmit="return confirm('{{ __('messages.users.phone_delete_confirm') ?? 'Delete phone?' }}')">
-                                        @csrf @method('POST')
-                                        <button class="btn btn-sm btn-outline-danger"
-                                            type="submit">{{ __('messages.users.delete_phone') ?? 'Delete' }}</button>
-                                    </form>
+                                    {{-- Replace inline confirm with modal trigger --}}
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-danger delete-phone-btn"
+                                        data-route="{{ route('telegram.logout', ['user_id' => $user->id, 'phone' => $phone->phone]) }}"
+                                        data-phone="{{ $phone->phone }}">
+                                        {{ __('messages.users.delete_phone') ?? 'Delete' }}
+                                    </button>
                                 </div>
+                                @endif  
                             </div>
                         @endforeach
                     </div>
@@ -354,6 +389,26 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm delete modal (single, reused) -->
+    <div id="modalBackdrop" class="modal-backdrop-custom" aria-hidden="true">
+        <div class="modal-custom" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <h4 id="modalTitle">{{ __('messages.users.phone_delete_confirm') ?? 'Confirm delete' }}</h4>
+            <div id="modalBody" class="small-muted">
+                {{ __('messages.users.phone_delete_confirm') ?? 'Are you sure you want to delete this phone?' }}
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" id="modalCancel" class="btn btn-secondary">{{ __('messages.admin.cancel') ?? 'Cancel' }}</button>
+
+                <form id="modalDeleteForm" method="POST" action="">
+                    @csrf
+                    {{-- If your route needs a method override, add here, e.g. @method('DELETE') --}}
+                    <button type="submit" class="btn btn-danger">{{ __('messages.users.delete_phone') ?? 'Delete' }}</button>
+                </form>
             </div>
         </div>
     </div>
@@ -631,6 +686,59 @@
                     e.preventDefault();
                     stepCode.classList.add('d-none');
                     stepPhone.classList.remove('d-none');
+                });
+            })();
+
+            /* -------- Delete phone modal logic -------- */
+            (function() {
+                const backdrop = document.getElementById('modalBackdrop');
+                const cancelBtn = document.getElementById('modalCancel');
+                const modalBody = document.getElementById('modalBody');
+                const modalForm = document.getElementById('modalDeleteForm');
+
+                function openModal(route, phone) {
+                    modalForm.setAttribute('action', route);
+                    // put friendly phone text in modal
+                    modalBody.textContent = "{{ __('messages.users.phone_delete_confirm') ?? 'Are you sure you want to delete this phone?' }}" + " — " + (phone || '');
+                    backdrop.style.display = 'flex';
+                    backdrop.setAttribute('aria-hidden', 'false');
+                }
+
+                function closeModal() {
+                    backdrop.style.display = 'none';
+                    backdrop.setAttribute('aria-hidden', 'true');
+                    modalForm.setAttribute('action', '');
+                }
+
+                // attach to buttons
+                document.querySelectorAll('.delete-phone-btn').forEach(btn => {
+                    if (btn.dataset.bound === '1') return;
+                    btn.dataset.bound = '1';
+                    btn.addEventListener('click', function(e) {
+                        const route = this.dataset.route;
+                        const phone = this.dataset.phone;
+                        if (!route) return;
+                        openModal(route, phone);
+                    });
+                });
+
+                cancelBtn?.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeModal();
+                });
+
+                // close on backdrop click (but not when clicking inside modal)
+                backdrop?.addEventListener('click', function(e) {
+                    if (e.target === backdrop) {
+                        closeModal();
+                    }
+                });
+
+                // escape key closes modal
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && backdrop.style.display === 'flex') {
+                        closeModal();
+                    }
                 });
             })();
 

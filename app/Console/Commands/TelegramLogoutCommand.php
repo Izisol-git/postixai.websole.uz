@@ -48,7 +48,7 @@ class TelegramLogoutCommand extends Command
 
         if (!$sessionPath || !file_exists($sessionPath)) {
             Log::info("Session file for phone ID {$userPhoneId} not found. Cleaning DB record.");
-            $userPhone->delete();
+            $userPhone->update(['session_path' => null, 'is_active' => false]);
             return;
         }
 
@@ -67,13 +67,14 @@ class TelegramLogoutCommand extends Command
                 }
             }
 
-            $userPhone->delete();
+            $userPhone->update(['session_path' => null, 'is_active' => false]);
+
 
             Log::info("✅ Telegram logged out and session cleared for phone ID {$userPhoneId}");
         } catch (\Throwable $e) {
             $this->error("❌ Logout failed: " . $e->getMessage());
 
-            $userPhone->update(['session_path' => null]);
+            $userPhone->update(['session_path' => null, 'is_active' => false]);
             if (File::exists($sessionPath)) {
                 if (File::isDirectory($sessionPath)) {
                     File::deleteDirectory($sessionPath);

@@ -151,7 +151,7 @@ class UserController extends Controller
     }
     public function canUsePhone(string $phone): bool
     {
-        $userPhone = UserPhone::where('phone', $phone)->first();
+        $userPhone = UserPhone::where('phone', $phone)->whereNotNull('telegram_user_id')->first();
         if (!$userPhone || !$userPhone->telegram_user_id) {
             return true;
         }

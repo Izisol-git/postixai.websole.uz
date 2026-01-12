@@ -332,40 +332,40 @@ document.addEventListener('DOMContentLoaded', function () {
     attachBanButtons();
 
     /* ---------- Activate phone (select change) ---------- */
-    document.querySelectorAll('.phone-select').forEach(sel => {
-        sel.addEventListener('change', async function() {
-            const phoneId = this.value;
-            const userId = this.dataset.userId;
-            if (!phoneId || !userId) return;
-            const url = `/users/${userId}/phones/${phoneId}/activate`;
+    // document.querySelectorAll('.phone-select').forEach(sel => {
+    //     sel.addEventListener('change', async function() {
+    //         const phoneId = this.value;
+    //         const userId = this.dataset.userId;
+    //         if (!phoneId || !userId) return;
+    //         const url = `/users/${userId}/phones/${phoneId}/activate`;
 
-            const orig = this;
-            orig.disabled = true;
+    //         const orig = this;
+    //         orig.disabled = true;
 
-            try {
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    }
-                });
-                const data = await res.json().catch(() => ({}));
-                if (!res.ok || !(String(data.status).toLowerCase() === 'success' || data.success === true)) {
-                    showToast(data.message || '{{ __("messages.admin.error_phone_activate") ?? "Failed to activate phone" }}', 'error');
-                } else {
-                    showToast(data.message || '{{ __("messages.admin.phone_activated") ?? "Phone activated" }}', 'success');
-                    const opt = orig.options[orig.selectedIndex];
-                    if (opt && data.data && typeof data.data.is_banned !== 'undefined') opt.setAttribute('data-phone-banned', data.data.is_banned ? '1' : '0');
-                }
-            } catch (err) {
-                console.error(err);
-                showToast('{{ __("messages.admin.server_error") ?? "Server error" }}', 'error');
-            } finally {
-                orig.disabled = false;
-            }
-        });
-    });
+    //         try {
+    //             const res = await fetch(url, {
+    //                 method: 'POST',
+    //                 headers: {
+    //                     'X-CSRF-TOKEN': csrfToken,
+    //                     'Accept': 'application/json'
+    //                 }
+    //             });
+    //             const data = await res.json().catch(() => ({}));
+    //             if (!res.ok || !(String(data.status).toLowerCase() === 'success' || data.success === true)) {
+    //                 showToast(data.message || '{{ __("messages.admin.error_phone_activate") ?? "Failed to activate phone" }}', 'error');
+    //             } else {
+    //                 showToast(data.message || '{{ __("messages.admin.phone_activated") ?? "Phone activated" }}', 'success');
+    //                 const opt = orig.options[orig.selectedIndex];
+    //                 if (opt && data.data && typeof data.data.is_banned !== 'undefined') opt.setAttribute('data-phone-banned', data.data.is_banned ? '1' : '0');
+    //             }
+    //         } catch (err) {
+    //             console.error(err);
+    //             showToast('{{ __("messages.admin.server_error") ?? "Server error" }}', 'error');
+    //         } finally {
+    //             orig.disabled = false;
+    //         }
+    //     });
+    // });
 
     /* ---------- Confirm modal logic (reused) ---------- */
     (function() {

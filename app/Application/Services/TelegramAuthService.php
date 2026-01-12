@@ -36,11 +36,10 @@ class TelegramAuthService
     }
 
     public function logout(User $user, string $phone): UserPhone
-    {
+    {   
         $userPhone = UserPhone::where('user_id', $user->id)
             ->where('phone', $phone)
-            ->firstOrFail();
-
+            ->first();
         $userPhone->state = 'logging_out';
         $userPhone->save();
 
